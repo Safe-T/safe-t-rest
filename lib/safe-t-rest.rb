@@ -21,7 +21,16 @@ class SafeTRest
   end
 
   def verify_user_account
-    send_request("iVerifyUserAccount",[@user_name, @password, true])
+    response = send_request("iVerifyUserAccount",[@user_name, @password, true])
+    status, message = response.split(':')
+    case status.downcase
+    when 'ok'
+      return Base64.decode64(message)
+    when 'error'
+      raise SafeTError.new(Base64.decode64(message))
+    else
+      raise SafeTError.new("Non-Standard status #{status}:#{Base64.decode64(message)}")
+    end
   end
 
   def get_user_history(days)
@@ -80,11 +89,16 @@ class SafeTRest
   end
 
   def register_session(url_string)
-    send_request("RegisterSession",[url_string])
-  end
-
-  def verify_session(post_parameters)
-    send_request("VerifySession",[post_parameters])
+    response = send_request("RegisterSession",[url_string])
+    status, message = response.split(':')
+    case status.downcase
+      when 'ok'
+        return JSON.parse(Base64.decode64(message), symbolize_names: true)
+      when 'error'
+        raise SafeTError.new(Base64.decode64(message))
+      else
+        raise SafeTError.new("Non-Standard status #{status}:#{Base64.decode64(message)}")
+    end
   end
 
   private
@@ -108,4 +122,6 @@ class SafeTRest
     )
   end
 end
+
+class SafeTError < Exception; end
 
