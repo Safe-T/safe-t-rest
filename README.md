@@ -87,6 +87,139 @@ file = client.file_download(args) # Get back the file as a base64 string
 file = Base64.decode64(file) # decode the string
 File.write('file.txt', file) # write decoded file
 ```
+* New API  
+# RegisterSession - return json flow
+
+## Overview  
+
+```
+StatusCode=OK&StatusData=Base64Json
+```  
+Base64Json:
+```json
+{
+	"flow": [
+	"username_password",
+	"sms"
+         ]
+        "token": [
+        "3434",
+        "7676"
+      ]
+}
+if there is no token element, SDA need to generate token.
+```
+
+## Scenarios  
+ 
+### Scenario 1   
+
+- Login to portal: (https://securemft/Safe-T/login.aspx)  
+ - SDA will send a rest call with URL and add sType :     
+    `https://securemft/Safe-T/login.aspx&sType=login`
+    ```json
+      {"RoleID": "00006", "ExtensionID": "226602f2-4960-4542-a489-8250a551b804", "Username":"", "Password":"", "Method": "RegisterSession","Arguments": ["https://securemft/Safe-T/login.aspx&sType=login"]}
+    ```  
+
+  - Return value:  
+    `StatusCode=OK&StatusData=`  
+    ```json
+    {
+      "flow": [
+        "username_password",
+        "sms"
+      ]
+    }
+    ```  
+- Handle return value    
+    - on submit , call iVerifyUserAccount add the submitted user name and password in base64 arguments:   
+      first step : username_password -  call iVerifyUserAccount (no need to call mobile - all against the same SDE Authentication app):
+
+```json
+{
+  "RoleID": "00006",
+   "ExtensionID": "226602f2-4960-4542-a489-8250a551b804",
+   "Username":"",
+   "Password":"",
+   "Method": "iVerifyUserAccount",
+   "Arguments": ["base64username","base64pass",true]
+}
+```  
+	  Return value:  
+         OK:Q2xpZW50TW93NyI=
+         base64 string is  "05977777777"
+        
+    - If its ok + number :   
+       go to second step 
+       else handle retries and captcha  
+    - if there is no number ? we need to ask alex\eithan.  
+      
+    - second step : sms - send sms to the ClientMobileNumber and validate it  
+       else handle retries and captcha
+
+### Scenario 2  
+Any other case : https://securemft/Safe-T/login.aspx?folderType=x&(query_string_params) (packages related url's ,safe reply,package view, registration)
+
+1.	SDA will call RegisterSession with URL param: 
+
+```json
+{
+  "RoleID": "00006",
+   "ExtensionID": "226602f2-4960-4542-a489-8250a551b804",
+   "Username":"",
+   "Password":"",
+   "Method": "iVerifyUserAccount",
+   "Arguments": ["base64username","base64pass",true]
+}
+``` 
+
+Return value:
+
+in case of registers users:
+`StatusCode=OK&StatusData=`
+```json
+    {
+      "flow": [
+        "username_password",
+        "sms"
+      ]
+      "token": [
+        "3434",
+        "7676"
+      ]
+    }
+```
+
+2. Handle return : 
+```ruby
+	if flow is :
+	"username_password",
+        "sms"
+```  
+- Handle return value    
+    - on submit , call iVerifyUserAccount add the submitted user name and password in base64 arguments:   
+      first step : username_password -  call iVerifyUserAccount (no need to call mobile - all against the same SDE Authentication app):
+	```json
+{
+  "RoleID": "00006",
+   "ExtensionID": "226602f2-4960-4542-a489-8250a551b804",
+   "Username":"",
+   "Password":"",
+   "Method": "iVerifyUserAccount",
+   "Arguments": ["base64username","base64pass",true]
+}
+
+ Return value:  
+        OK:Q2xpZW50TW93NyI=
+        base64 string is  "05977777777"
+
+    - If its ok + number :   
+       go to second step 
+       else handle retries and captcha  
+    - if there is no number ? we need to ask alex\eithan.  
+
+    - second step : sms - send sms to the ClientMobileNumber and validate it  
+       else handle retries and captcha
 
 # RubyDoc
 http://www.rubydoc.info/github/bararchy/safe-t-rest/SafeTRest
