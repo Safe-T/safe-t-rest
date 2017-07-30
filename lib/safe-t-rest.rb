@@ -47,10 +47,19 @@ class SafeTRest
     send_request("iFileDownload: ['#{@user_name}', '#{@password}', '#{args[:file_name]}', '#{args[:folder_path]}', #{args[:root_folder_id]}]")
   end
 
+  def register_session(url_string)
+    send_request("\'RegisterSession\': [\'#{url_string}\']")
+  end
+
+  def verify_session(post_parameters)
+    send_request("\'VerifySession\': [\'#{post_parameters}\']")
+  end
+
   private
 
   def send_request(request_string)
     RestClient::Request.execute(
+      :verify_ssl => false,
       method: :post,
       url: @url,
       headers: {
@@ -60,3 +69,4 @@ class SafeTRest
     )
   end
 end
+
