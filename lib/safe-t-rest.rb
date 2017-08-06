@@ -4,10 +4,10 @@ require 'json'
 
 class SafeTRest
 
-  def initialize(config_hash={user_name: '', password: ''})
+  def initialize(config_hash={})
     @extension_id = config_hash[:extension_id]
-    @user_name    = Base64.strict_encode64(config_hash[:user_name])
-    @password     = Base64.strict_encode64(config_hash[:password])
+    @user_name    = Base64.strict_encode64(config_hash[:user_name]) if config_hash[:user_name]
+    @password     = Base64.strict_encode64(config_hash[:password]) if config_hash[:password]
     @url          = config_hash[:rest_url]
     @role_id      = config_hash[:role_id]
   end
