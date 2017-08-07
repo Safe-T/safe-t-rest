@@ -23,6 +23,7 @@ class SafeTRest
   def verify_user_account
     response = send_request("iVerifyUserAccount",[@user_name, @password, true])
     status, message = response.split(':')
+    raise SafeTError.new("Got empty response from server: #{message}, status: #{status}") if message.to_s.empty?
     case status.downcase
     when 'ok'
       return Base64.decode64(message)
@@ -91,6 +92,7 @@ class SafeTRest
   def register_session(url_string)
     response = send_request("RegisterSession",[url_string])
     status, message = response.split(':')
+    raise SafeTError.new("Got empty response from server: #{message}, status: #{status}") if message.to_s.empty?
     case status.downcase
       when 'ok'
         return JSON.parse(Base64.decode64(message), symbolize_names: true)
