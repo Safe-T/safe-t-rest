@@ -26,7 +26,7 @@ class SafeTRest
     raise SafeTError.new("Got empty response from server: #{message}, status: #{status}") if message.to_s.empty?
     case status.downcase
     when 'ok'
-      return Base64.decode64(message)
+      return JSON.parse(Base64.decode64(message), symbolize_names: true)
     when 'error'
       raise SafeTError.new(Base64.decode64(message))
     else
