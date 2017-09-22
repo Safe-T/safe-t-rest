@@ -1,3 +1,13 @@
+# semver criteria
+
+Given same method call signatures, behavior should not change.
+
+Upstream changes in the API call signature itself should be treated as bugfixes.
+The intended API call was broken "upstream" / "for reasons not originating
+from this gem", therefore from this gem's perspective, the same intended
+behavior can be restored by updating ("fixing") the API call, i.e. a "bugfix".
+Bump a patch.
+
 # safe-t-rest
 
 A ruby gem for Safe-T Box REST API
